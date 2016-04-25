@@ -19,7 +19,11 @@ struct Process {
     int mem_block_count;
     vector<int> mem_blocks;
 };
-
+/*
+    2 //process id
+    0 //arrival_time  2000 //life_time
+    2 //number_of_pieces 200 400 //address space blocks, total = 200 + 400 = 600
+*/
 void readFile(queue<Process> & process_queue);
 
 int main()
