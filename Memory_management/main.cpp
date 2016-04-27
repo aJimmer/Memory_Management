@@ -38,7 +38,8 @@ struct Memory_Block {
 
 void readFile(priority_queue<Process> & process_queue, vector<int> & events);
 void buildMemoryMap(vector<Memory_Block> & memory_block, int memory_size, int page_size);
-bool check_available_memory(vector<Memory_Block> & memory_block, Process process);
+bool checkAvailableMemory(vector<Memory_Block> & memory_block, Process process);
+void addProcessToMem(vector<Memory_Block> & memory_block, Process process);
 //void loadInMemory(priority_queue<Process> & process_queue, vector<Memory_Block> & memory_block, process);
 
 int main()
@@ -78,9 +79,8 @@ int main()
             process = process_queue.top();
             // process.printProcess();
             
-            if ((process.time_start == time) && check_available_memory(memory_block, process)){
-                
-                
+            if ((process.time_start == time) && checkAvailableMemory(memory_block, process)){
+                addProcessToMem(memory_block, process);
             }
             else if(process.time_end == time){
                 cout << "Try to remove from memory!" << endl;
@@ -173,11 +173,15 @@ void buildMemoryMap(vector<Memory_Block> & memory_blocks, int memory_size, int p
     }
 }
 
-bool check_available_memory(vector<Memory_Block> & memory_block, Process process){
+bool checkAvailableMemory(vector<Memory_Block> & memory_block, Process process){
     bool available = false;
     
     
     return available;
+}
+
+void addProcessToMem(vector<Memory_Block> & memory_block, Process process){
+    
 }
 
 
