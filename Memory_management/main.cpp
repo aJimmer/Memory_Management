@@ -47,6 +47,7 @@ struct Memory_Block {
     int process_number;
     int page_number;
     int total_size;
+    int release_time;
     bool available;
 };
 
@@ -90,6 +91,8 @@ int main()
     
     int e_time = 0;
     int size_of_process_queue = 0;
+    vector<Process> in_memory;
+    
     for (int time = 0; time < events.back(); time++) {
         while (events[e_time] == time) {
             //get the first process in the queue
@@ -104,27 +107,40 @@ int main()
             process.total_memory = process_queue[size_of_process_queue].total_memory;
             
             cout << "\nTime (ms): " << time << endl;
+            //release finished processes
+            for(int i = 0; i < memory_block.size(); i++){
+                if(memory_block[i].release_time == time){
+                    memory_block[i].available = true;
+                }
+            }
+            
             if ((process.time_start == time) && checkAvailableMemory(memory_block, process, page_size, pages)) {
                 
+                in_memory.push_back(process);
                 addProcessToMem(memory_block, process, pages);
                 cout << "\nAdded process to memory: \n";
                 process.printProcess();
+                process_queue.pop_back();
                 cout << endl;
             }
-            else if (process.time_end == time) {
+            else if (in_memory.front().time_end == time) {
+                
                 cout << "Try to remove from memory!" << endl;
-                process.printProcess();
+                in_memory.back().printProcess();
+                in_memory.pop_back();
+                
                 cout << endl;
             }
             else {
                 cout << "Add this process to ready queue.\n";
                 //ready_queue.push_back(process);
                 process.printProcess();
+                process_queue.pop_back();
                 cout << endl;
             }
-            process_queue.pop_back();
-            e_time++;
+                e_time++;
         }
+        
     }
     
     /*cout << "Ready Queue: ";
@@ -237,6 +253,7 @@ void addProcessToMem(vector<Memory_Block> & memory_block, Process process, vecto
             if(pages[i] == memory_block[k].page_number){
                 //cout << i << " " << k << endl;
                 memory_block[k].process_number = process.pid;
+                memory_block[k].release_time = process.time_end;
                 cout << "Process " << process.pid << " was allocated to page: " << memory_block[k].page_number << endl;
             }
             //cout << i << " " << k << endl;
@@ -254,8 +271,9 @@ bool checkForContMemory(vector<Memory_Block> & memory_block, Process process, ve
     for(int i = 0; i < pages_size; i++){
         pages.pop_back();
     }
+    
     if(memory_block[page_number].available){
-        while ((memory_block[page_number].available) && (needed_memory >= memory_block[page_number].total_size)){
+        while ((memory_block[page_number].available) && (needed_memory >= memory_block[page_number].total_size) && (page_number < memory_block.size())){
 
             cout << "\nPage: " << page_number << " \nPage Size: " << memory_block[page_number].total_size
             << "\nNeeded Memory for process " << process.pid << ": " << needed_memory << "\nAvailabe: " << memory_block[page_number].available << endl;
@@ -266,6 +284,10 @@ bool checkForContMemory(vector<Memory_Block> & memory_block, Process process, ve
             page_number++;
         }
         if(needed_memory < memory_block[page_number].total_size){
+            cout << "\nPage: " << page_number << " \nPage Size: " << memory_block[page_number].total_size
+            << "\nNeeded Memory for process " << process.pid << ": " << needed_memory << "\nAvailabe: " << memory_block[page_number].available << endl;
+            pages.push_back(memory_block[page_number].page_number);
+            memory_block[page_number].available = false;
             available = true;
         }
     }
