@@ -113,6 +113,14 @@ int main()
                     memory_block[i].available = true;
                 }
             }
+            /*if (in_memory.size() > 0 && in_memory.front().time_end == time) {
+                while(in_memory.front().time_end == time){
+                    cout << "Removing Process" << in_memory.back().pid << endl;
+                    in_memory.back().printProcess();
+                    in_memory.pop_back();
+                    cout << endl;
+                }
+            }*/
             
             if ((process.time_start == time) && checkAvailableMemory(memory_block, process, page_size, pages)) {
                 
@@ -123,17 +131,10 @@ int main()
                 process_queue.pop_back();
                 cout << endl;
             }
-            else if (in_memory.front().time_end == time) {
-                
-                cout << "Try to remove from memory!" << endl;
-                in_memory.back().printProcess();
-                in_memory.pop_back();
-                
-                cout << endl;
-            }
+
             else {
                 cout << "Add this process to ready queue.\n";
-                //ready_queue.push_back(process);
+                ready_queue.push_back(process);
                 process.printProcess();
                 process_queue.pop_back();
                 cout << endl;
@@ -231,15 +232,22 @@ bool checkAvailableMemory(vector<Memory_Block> & memory_blocks, Process process,
     
     bool available = false;
     int page_number = 0;
+    int pages_size = (int)pages.size();
     
     while ((page_number < memory_blocks.size()) && (available == false)) {
         if ((memory_blocks[page_number].available) && (process.total_memory <= memory_blocks[page_number].total_size)) {
-            available = true;
+            
+            for(int i = 0; i < pages_size; i++){
+                pages.pop_back();
+            }
+            pages.push_back(page_number);
+            return available = true;
         }
         else if ((memory_blocks[page_number].available) && (process.total_memory > memory_blocks[page_number].total_size)) {
             
             available = checkForContMemory(memory_blocks, process, pages, page_number);
             cout << "Is there avaliable contiguous memory? True or false?: " << available << endl;
+            
             
         }
         page_number++;
@@ -254,6 +262,7 @@ void addProcessToMem(vector<Memory_Block> & memory_block, Process process, vecto
                 //cout << i << " " << k << endl;
                 memory_block[k].process_number = process.pid;
                 memory_block[k].release_time = process.time_end;
+                memory_block[k].available = false;
                 cout << "Process " << process.pid << " was allocated to page: " << memory_block[k].page_number << endl;
             }
             //cout << i << " " << k << endl;
@@ -273,22 +282,24 @@ bool checkForContMemory(vector<Memory_Block> & memory_block, Process process, ve
     }
     
     if(memory_block[page_number].available){
-        while ((memory_block[page_number].available) && (needed_memory >= memory_block[page_number].total_size) && (page_number < memory_block.size())){
+        while ((memory_block[page_number].available) && (needed_memory > memory_block[page_number].total_size) && (page_number < memory_block.size())){
 
             cout << "\nPage: " << page_number << " \nPage Size: " << memory_block[page_number].total_size
             << "\nNeeded Memory for process " << process.pid << ": " << needed_memory << "\nAvailabe: " << memory_block[page_number].available << endl;
             
             needed_memory -= memory_block[page_number].total_size;
             pages.push_back(memory_block[page_number].page_number);
-            memory_block[page_number].available = false;
+            //memory_block[page_number].available = false;
             page_number++;
         }
-        if(needed_memory < memory_block[page_number].total_size){
-            cout << "\nPage: " << page_number << " \nPage Size: " << memory_block[page_number].total_size
+        if((needed_memory <= memory_block[page_number].total_size) && (page_number < memory_block.size())){
+            cout << "\nThis page is the last page to allocate! \n";
+            cout << "Page: " << page_number << " \nPage Size: " << memory_block[page_number].total_size
             << "\nNeeded Memory for process " << process.pid << ": " << needed_memory << "\nAvailabe: " << memory_block[page_number].available << endl;
             pages.push_back(memory_block[page_number].page_number);
-            memory_block[page_number].available = false;
+            //memory_block[page_number].available = false;
             available = true;
+            
         }
     }
 
