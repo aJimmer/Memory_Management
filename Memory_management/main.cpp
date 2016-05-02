@@ -13,7 +13,7 @@ public:
     int time_end;
     int time_life;
     int mem_block_count;
-    int total_memory = 0;
+    int total_memory;
     vector<int> mem_blocks;
     
     bool operator < (const Process & a) const
@@ -366,9 +366,5 @@ bool checkForContMemory(vector<Memory_Block> & memory_block, Process process, ve
     }
     return available;
 }
-
-
-
-
 
 
